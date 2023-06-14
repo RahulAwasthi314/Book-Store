@@ -1,4 +1,5 @@
-﻿using BookStoreAPI.Data;
+﻿using AutoMapper;
+using BookStoreAPI.Data;
 using BookStoreAPI.Models;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -9,38 +10,47 @@ namespace BookStoreAPI.Repository
     public class BookRepository : IBookRepository
     {
         private readonly BookStoreContext _context;
+        private readonly IMapper _mapper;
 
-        public BookRepository(BookStoreContext context)
+        public BookRepository(BookStoreContext context, IMapper mapper)
         {
             this._context = context;
+            this._mapper = mapper;
         }
         public async Task<List<BookModel>> GetAllBooksAsync()
         {
             // use automapper here
-            var records = await _context.Books.Select(x => new BookModel()
-            {
-                Id = x.Id,
-                Title = x.Title,
-                Description = x.Description
-            }).ToListAsync();
+            //var records = await _context.Books.Select(x => new BookModel()
+            //{
+            //    Id = x.Id,
+            //    Title = x.Title,
+            //    Description = x.Description
+            //}).ToListAsync();
 
-            return records;
+            //return records;
+
+            var records = await _context.Books.ToListAsync();
+            return _mapper.Map<List<BookModel>>(records);
         }
 
         public async Task<BookModel?> GetBookByIdAsync(int bookId)
         {
             // use automapper here
-            var record = await _context.Books
-                .Where(x => x.Id == bookId)
-                .Select(x => new BookModel()
-                {
-                    Id = x.Id,
-                    Title = x.Title,
-                    Description = x.Description
-                })
-                .FirstOrDefaultAsync();
+            //var record = await _context.Books
+            //    .Where(x => x.Id == bookId)
+            //    .Select(x => new BookModel()
+            //    {
+            //        Id = x.Id,
+            //        Title = x.Title,
+            //        Description = x.Description
+            //    })
+            //    .FirstOrDefaultAsync();
+            //return record;
 
-            return record;
+
+            var book = await _context.Books.FirstOrDefaultAsync(bookId);
+            return _mapper.Map<BookModel>(book);
+
         }
 
 
@@ -51,6 +61,8 @@ namespace BookStoreAPI.Repository
                 Title = bookModel.Title,
                 Description = bookModel.Description
             };
+            // can we use mapper here 
+            // wouldn't it affect the id of bookModel?
 
             _context.Books.Add(book);
             await _context.SaveChangesAsync();
@@ -99,6 +111,8 @@ namespace BookStoreAPI.Repository
             // else hit the db twice
 
             // case 1: bookId is primary key
+            /// TODO
+            // case if Key does not exist???......
             var book = new Books() { Id = bookId };
 
             // case 2: bookId is not primary key
