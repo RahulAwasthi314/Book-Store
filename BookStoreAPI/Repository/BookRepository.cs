@@ -92,5 +92,21 @@ namespace BookStoreAPI.Repository
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task DeleteBookAsync(int bookId)
+        {
+            // if delete key is primary -> delete the entity in one go
+            // else hit the db twice
+
+            // case 1: bookId is primary key
+            var book = new Books() { Id = bookId };
+
+            // case 2: bookId is not primary key
+            //var book = _context.Books.Where(x => x.Title == "")
+            //                         .FirstOrDefault();
+
+            _context.Books.Remove(book);
+            await _context.SaveChangesAsync();
+        }
     }
 }
