@@ -57,15 +57,26 @@ namespace BookStoreAPI.Repository
             return book.Id;
         }
 
+        // add atleast bool to send the proper response
         public async Task UpdateBookAsync(int bookId, BookModel bookModel)
         {
-            var book = await _context.Books.FindAsync(bookId);
-            if (book != null)
+            //var book = await _context.Books.FindAsync(bookId);
+            //if (book != null)
+            //{
+            //    book.Title = bookModel.Title;
+            //    book.Description = bookModel.Description;
+            //    await _context.SaveChangesAsync();
+            //}
+            // only 1 time database connection is required now
+
+            var book = new Books()
             {
-                book.Title = bookModel.Title;
-                book.Description = bookModel.Description;
-                await _context.SaveChangesAsync();
-            }
+                Id = bookId,
+                Title = bookModel.Title,
+                Description = bookModel.Description
+            };
+            _context.Books.Update(book);
+            await _context.SaveChangesAsync();
         }
     }
 }
