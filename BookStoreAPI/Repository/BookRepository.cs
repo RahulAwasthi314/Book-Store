@@ -48,7 +48,7 @@ namespace BookStoreAPI.Repository
             //return record;
 
 
-            var book = await _context.Books.FirstOrDefaultAsync(bookId);
+            var book = await _context.Books.FindAsync(bookId);
             return _mapper.Map<BookModel>(book);
 
         }

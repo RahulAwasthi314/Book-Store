@@ -26,6 +26,14 @@ builder.Services.AddDbContext<BookStoreContext>(options =>
     options.UseSqlServer(connectionString)
 );
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+    {
+        builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+    });
+});
+
 builder.Services.AddTransient<IBookRepository, BookRepository>();
 
 
@@ -39,6 +47,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// use routing
+app.UseRouting();
+
+app.UseCors();
 
 app.UseAuthorization();
 
