@@ -1,5 +1,7 @@
 using BookStoreAPI.Data;
+using BookStoreAPI.Models;
 using BookStoreAPI.Repository;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,6 +27,10 @@ string connectionString = builder.Configuration.GetConnectionString("DefaultConn
 builder.Services.AddDbContext<BookStoreContext>(options => 
     options.UseSqlServer(connectionString)
 );
+
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+    .AddEntityFrameworkStores<BookStoreContext>()
+    .AddDefaultTokenProviders();
 
 builder.Services.AddCors(options =>
 {
