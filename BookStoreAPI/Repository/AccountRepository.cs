@@ -1,14 +1,26 @@
 ﻿using BookStoreAPI.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http;
+using System.Security.Claims;
+using System.Text;
 
 namespace BookStoreAPI.Repository
 {
     public class AccountRepository : IAccountRepository
     {
-        private readonly UserManager<ApplicationUser> userManager;
-        public AccountRepository(UserManager<ApplicationUser> userManager) 
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IConfiguration _configuration;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+
+        public AccountRepository(UserManager<ApplicationUser> userManager, 
+            IConfiguration configuration,
+            SignInManager<ApplicationUser> signInManager) 
         {
-            this.userManager = userManager;
+            this._userManager = userManager;
+            this._configuration = configuration;
+            this._signInManager = signInManager;
         }
 
         public async Task<IdentityResult> SignUpAsync(SignUpModel signUpModel)
@@ -21,7 +33,34 @@ namespace BookStoreAPI.Repository
                 UserName = signUpModel.Email
             };
 
-            return await userManager.CreateAsync(user, signUpModel.Password);
+            return await _userManager.CreateAsync(user, signUpModel.Password);
+        }
+
+        public async Task<string?> LoginAsync(SignInModel signInModel)
+        {
+            var result = await _signInManager.PasswordSignInAsync(signInModel.Email, signInModel.Password, false, false);
+
+            if (!result.Succeeded)
+            {
+                return null;
+            }
+
+            var authClaims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, signInModel.Email),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
+
+            var authSigninKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_configuration["JWT:Secret"]));
+            var token = new JwtSecurityToken(
+                issuer: _configuration["JWT:ValidIssuer"],
+                audience: _configuration["JWT:ValidAudience"],
+                expires: DateTime.Now.AddDays(1),
+                claims: authClaims,
+                signingCredentials: new SigningCredentials(authSigninKey, SecurityAlgorithms.HmacSha256Signature)
+                );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }
