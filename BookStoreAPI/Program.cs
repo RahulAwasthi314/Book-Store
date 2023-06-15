@@ -41,6 +41,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddTransient<IBookRepository, BookRepository>();
+builder.Services.AddTransient<IAccountRepository, AccountRepository>();
 
 
 var app = builder.Build();
