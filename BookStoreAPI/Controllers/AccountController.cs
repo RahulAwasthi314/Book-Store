@@ -1,6 +1,8 @@
-﻿using BookStoreAPI.Repository;
+﻿using BookStoreAPI.Models;
+using BookStoreAPI.Repository;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Identity.Client;
 
 namespace BookStoreAPI.Controllers
 {
@@ -13,6 +15,18 @@ namespace BookStoreAPI.Controllers
         public AccountController(IAccountRepository accountRepository)
         {
             this._accountRepository = accountRepository;
+        }
+
+        [HttpPost("signUp")]
+        public async Task<IActionResult> SignUp([FromBody]SignUpModel signUpModel)
+        {
+            var result = await _accountRepository.SignUpAsync(signUpModel);
+            
+            if (result.Succeeded)
+            {
+                return Ok(result.Succeeded);
+            }
+            return Unauthorized();
         }
     }
 }
